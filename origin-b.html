@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IA - Prompt Engineering</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        line-height: 1.6;
+        background: linear-gradient(135deg, #4633d3 0%, #1d0734 100%);
+        color: #111123;
+        overflow-x: hidden;
+      }
+
+      /* Navigation */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        padding: 1rem 0;
+        transition: all 0.3s ease;
+      }
+
+      .navbar.scrolled {
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .nav-links a:hover {
+        color: #667eea;
+        transform: translateY(-2px);
+      }
+
+      .nav-links a::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        transition: width 0.3s ease;
+      }
+
+      .nav-links a:hover::after {
+        width: 100%;
+      }
+
+      /* Mobile menu */
+      .mobile-menu {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+      }
+
+      .mobile-menu span {
+        width: 25px;
+        height: 3px;
+        background: #333;
+        margin: 3px 0;
+        transition: 0.3s;
+      }
+
+      /* Hero Section */
+      .hero {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 1;
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        padding: 0 2rem;
+      }
+
+      .hero h1 {
+        font-size: clamp(3rem, 6vw, 5rem);
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        opacity: 0;
+        animation: fadeInUp 1s ease 0.5s forwards;
+      }
+
+      .hero p {
+        font-size: clamp(1.2rem, 2vw, 1.5rem);
+        margin-bottom: 2rem;
+        opacity: 0;
+        animation: fadeInUp 1s ease 0.7s forwards;
+      }
+
+      .cta-button {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        opacity: 0;
+        animation: fadeInUp 1s ease 0.9s forwards;
+      }
+
+      .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+      }
+
+      /* Sections */
+      .section {
+        padding: 5rem 0;
+        position: relative;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      .section-title {
+        font-size: clamp(2.5rem, 4vw, 3.5rem);
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 3rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.2);
+      }
+
+      .card-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .card h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #333;
+      }
+
+      .card p {
+        color: #666;
+        line-height: 1.7;
+      }
+
+      /* Alternating sections */
+      .section:nth-child(even) {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .section:nth-child(odd) {
+        background: white;
+      }
+
+      /* Copilot principles */
+      .principles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .principle-item {
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1),
+          rgba(118, 75, 162, 0.1)
+        );
+        border-radius: 15px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+      }
+
+      .principle-item:hover {
+        border-left-color: #667eea;
+        transform: translateX(10px);
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.15),
+          rgba(118, 75, 162, 0.15)
+        );
+      }
+
+      /* Steps */
+      .steps-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .step {
+        flex: 1;
+        min-width: 200px;
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .step:hover {
+        transform: scale(1.05);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+      }
+
+      .step-number {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin: 0 auto 1rem;
+      }
+
+      /* Interactive elements */
+      .interactive-demo {
+        background: rgba(255, 255, 255, 0.597);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 2px dashed rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .interactive-demo:hover {
+        border-color: #667eea;
+        transform: scale(1.02);
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+      }
+
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Footer */
+      .footer {
+        background: #333;
+        color: white;
+        text-align: center;
+        padding: 3rem 0;
+      }
+
+      .footer p {
+        margin-bottom: 1rem;
+      }
+
+      .action-checklist {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      .action-checklist:hover {
+        background: #f8f9ff;
+        transform: translateX(10px);
+      }
+
+      .checkbox {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #667eea;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .checkbox.checked {
+        background: #667eea;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+
+        .mobile-menu {
+          display: flex;
+        }
+
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        .steps-container {
+          flex-direction: column;
+        }
+
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="logo">IA Prompt Engineering</div>
+        <ul class="nav-links">
+          <li><a href="#hero">Inicio</a></li>
+          <li><a href="#context">Contexto</a></li>
+          <li><a href="#copilot">Copilot</a></li>
+          <li><a href="#models">Modelos</a></li>
+          <li><a href="#formula">Fórmula</a></li>
+          <li><a href="#tools">Herramientas</a></li>
+          <li><a href="#actions">Acciones</a></li>
+        </ul>
+        <div class="mobile-menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero">
+      <div class="hero-content">
+        <h1>Domina la IA</h1>
+        <p>
+          Aprende Prompt Engineering para maximizar tu productividad con ChatGPT
+          y otros modelos de IA
+        </p>
+        <a href="#context" class="cta-button">Comenzar Aprendizaje</a>
+      </div>
+    </section>
+
+    <!-- Context Section -->
+    <section id="context" class="section">
+      <div class="container">
+        <h2 class="section-title fade-in">¿Por qué ahora?</h2>
+        <div class="content-grid">
+          <div class="card fade-in">
+            <div class="card-icon">🏥</div>
+            <h3>Diagnóstico médico</h3>
+            <p>
+              +21% de eficacia (99% vs 78%) en detección de cáncer con IA en
+              Australia
+            </p>
+          </div>
+          <div class="card fade-in">
+            <div class="card-icon">🎓</div>
+            <h3>Educación</h3>
+            <p>
+              Escuela en Texas saltó al top 2% nacional tras implantar 2h/día de
+              tutor IA
+            </p>
+          </div>
+          <div class="card fade-in">
+            <div class="card-icon">⏱️</div>
+            <h3>Productividad</h3>
+            <p>
+              40-50% de tareas podrían hacerse en la mitad de tiempo con IA
+              actual
+            </p>
+          </div>
+          <div class="card fade-in">
+            <div class="card-icon">🏦</div>
+            <h3>BBVA Piloto</h3>
+            <p>
+              Ahorro medio 2-3h/semana; ampliación de 3,000 a 11,000 licencias
+            </p>
+          </div>
+        </div>
+        <div class="interactive-demo fade-in">
+          <h3>💡 Tesis Principal</h3>
+          <p>
+            La IA deja de ser ventaja diferencial y pasa a infraestructura (como
+            agua/electricidad/internet). La competitividad depende de integrar
+            IA en todos los procesos laborales y personales.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Copilot Section -->
+    <section id="copilot" class="section">
+      <div class="container">
+        <h2 class="section-title fade-in">
+          COPILOTo - Principios de uso eficaz
+        </h2>
+        <p
+          class="fade-in"
+          style="text-align: center; font-size: 1.2rem; margin-bottom: 3rem"
+        >
+          La IA es tu compañero de trabajo, tu colega; es tu "copiloto"
+        </p>
+
+        <div class="principles-grid">
+          <div class="principle-item fade-in">
+            <h3>🤝 Colaboración iterativa</h3>
+            <p>
+              La IA no "hace el trabajo sola"; el valor surge al combinar
+              fortalezas humanas y del modelo. Iterar como con un diseñador:
+              feedback por ciclos.
+            </p>
+          </div>
+          <div class="principle-item fade-in">
+            <h3>📝 Calidad de entrada</h3>
+            <p>
+              "Shit in, shit out": un prompt pobre produce salidas pobres. Ser
+              asertivo, definir audiencia, dividir tareas.
+            </p>
+          </div>
+          <div class="principle-item fade-in">
+            <h3>⚠️ Convivir con errores</h3>
+            <p>
+              Alucinaciones reducidas ~90% respecto al año previo; supervisión
+              humana requerida. Si un chat alucina: reiniciar.
+            </p>
+          </div>
+        </div>
+
+        <div class="interactive-demo fade-in">
+          <h3>🚫 SHIT IN = SHIT OUT</h3>
+          <p>
+            <strong>Ejemplo:</strong> Si pides "realiza un análisis de mercado"
+            sin especificar qué mercado, obtendrás un análisis superficial y
+            poco útil. La calidad del prompt determina la calidad de la
+            respuesta.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Models Section -->
+    <section id="models" class="section">
+      <div class="container">
+        <h2 class="section-title fade-in">Modelos y Razonamiento</h2>
+
+        <div class="content-grid">
+          <div class="card fade-in">
+            <div class="card-icon">⚡</div>
+            <h3>GPT-4o</h3>
+            <p>
+              Multimodal (texto/voz/imágenes), rápido; adecuado para la mayoría
+              de tareas cotidianas.
+            </p>
+          </div>
+          <div class="card fade-in">
+            <div class="card-icon">🧠</div>
+            <h3>Modelos de razonamiento</h3>
+            <p>
+              Como o3, o4 mini/high: piensan antes de responder; más lentos pero
+              más precisos en tareas complejas.
+            </p>
+          </div>
+        </div>
+
+        <div class="interactive-demo fade-in">
+          <h3>🤔 ¿Cuándo usar razonamiento?</h3>
+          <ul style="list-style: none; padding: 0">
+            <li>✓ Problemas con múltiples restricciones</li>
+            <li>✓ Planificación con presupuesto/tiempos</li>
+            <li>✓ Verificación contra fuentes</li>
+            <li>✓ Análisis detallado de imágenes complejas</li>
+          </ul>
+        </div>
+
+        <div class="card fade-in" style="margin-top: 2rem">
+          <h3>🔍 Cómo funciona la IA</h3>
+          <p style="font-size: 1.1rem; font-weight: 600; color: #667eea">
+            PREDICE LA PRÓXIMA PALABRA
+          </p>
+          <p>
+            Pero a velocidades sorprendentes. Utiliza arquitectura Transformer
+            para procesar y generar texto coherente y contextualmente relevante,
+            realizando tareas que antes creíamos exclusivas de los humanos.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formula Section -->
+    <section id="formula" class="section">
+      <div class="container">
+        <h2 class="section-title fade-in">
+          Fórmula en 5 pasos para prompts de alta calidad
+        </h2>
+
+        <div class="steps-container">
+          <div class="step fade-in">
+            <div class="step-number">1</div>
+            <h3>Contexto</h3>
+            <p>Proporciona información relevante para situar la tarea</p>
+          </div>
+          <div class="step fade-in">
+            <div class="step-number">2</div>
+            <h3>Tarea</h3>
+            <p>Define claramente qué se espera lograr con el prompt</p>
+          </div>
+          <div class="step fade-in">
+            <div class="step-number">3</div>
+            <h3>Instrucción</h3>
+            <p>
+              Especifica cómo se debe llevar a cabo (formato, longitud, etc.)
+            </p>
+          </div>
+          <div class="step fade-in">
+            <div class="step-number">4</div>
+            <h3>Clarificación</h3>
+            <p>
+              Incluye detalles adicionales, límites o requisitos específicos
+            </p>
+          </div>
+          <div class="step fade-in">
+            <div class="step-number">5</div>
+            <h3>Refinamiento</h3>
+            <p>Ajusta el prompt según sea necesario para mejorar la calidad</p>
+          </div>
+        </div>
+
+        <div class="interactive-demo fade-in">
+          <h3>🎯 Técnicas y trucos prácticos</h3>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+              gap: 1rem;
+              margin-top: 1rem;
+            "
+          >
+            <div style="background: white; padding: 1rem; border-radius: 10px">
+              <strong>Asertividad:</strong> "Eres un experto en IA"
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 10px">
+              <strong>Role prompting:</strong> "Eres un contador especialista
+              en..."
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 10px">
+              <strong>Incluir audiencia:</strong> comité directivo vs.
+              compañeros
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 10px">
+              <strong>Dividir tareas:</strong> en pasos, iteraciones guiadas
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section id="tools" class="section">
+      <div class="container">
+        <h2 class="section-title fade-in">Herramientas clave de ChatGPT</h2>
+
+        <div class="content-grid">
+          <div class="card fade-in">
+            <div class="card-icon">🎨</div>
+            <h3>Canvas (Lienzo)</h3>
+            <p>
+              Herramienta visual para organizar y estructurar ideas de manera
+              gráfica. Editor tipo "Word" integrado con edición contextual.
+            </p>
+          </div>
+          <div class="card fade-in">
+            <div class="card-icon">💻</div>
+            <h3>Code Interpreter</h3>
+            <p>
+              Carga y análisis de ficheros (Excel/CSV/PDF), generación de
+              gráficos y explicaciones. Adaptar contenido a diferentes edades.
+            </p>
+          </div>
+          <div class="card fade-in">
+            <div class="card-icon">🔍</div>
+            <h3>Deep Research</h3>
+            <p>
+              Investigación profunda sobre temas específicos con capacidad de
+              exportar resultados a PDF para documentación.
+            </p>
+          </div>
+        </div>
+
+        <div class="interactive-demo fade-in">
+          <h3>⚡ Casos prácticos</h3>
+          <p>
+            Ejemplo: Subir un Excel y desarrollar una app completa, o generar un
+            borrador de blog/receta y refinarlo por secciones con chat
+            contextual.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions Section -->
+    <section id="actions" class="section">
+      <div class="container">
+        <h2 class="section-title fade-in">Puntos de acción</h2>
+
+        <div style="max-width: 800px; margin: 0 auto">
+          <div class="action-checklist fade-in">
+            <div class="checkbox" onclick="toggleCheck(this)"></div>
+            <p>
+              Practicar la fórmula de 5 pasos para prompts en una tarea real de
+              la semana
+            </p>
+          </div>
+          <div class="action-checklist fade-in">
+            <div class="checkbox" onclick="toggleCheck(this)"></div>
+            <p>
+              Configurar y probar Canvas y Code Interpreter con un
+              documento/Excel propios
+            </p>
+          </div>
+          <div class="action-checklist fade-in">
+            <div class="checkbox" onclick="toggleCheck(this)"></div>
+            <p>
+              Realizar una investigación con Deep Research sobre un tema laboral
+              y exportar a PDF
+            </p>
+          </div>
+          <div class="action-checklist fade-in">
+            <div class="checkbox" onclick="toggleCheck(this)"></div>
+            <p>
+              Preparar preguntas y casos de uso específicos para tu área de
+              trabajo
+            </p>
+          </div>
+        </div>
+
+        <div class="interactive-demo fade-in">
+          <h3>🎯 Recomendaciones de adopción</h3>
+          <p>
+            Integra IA en todos los procesos diarios (trabajo y vida personal).
+            Reemplaza hábitos (Google/Excel) por asistentes IA cuando aplique.
+            Establece flujos reproducibles y aplica gobernanza adecuada.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>
+          &copy; 2024 IA - Prompt Engineering. Preparándote para el futuro con
+          IA.
+        </p>
+        <p>La IA es infraestructura, es el nuevo estándar.</p>
+      </div>
+    </footer>
+
+    <script>
+      // Smooth scrolling for navigation links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
+        });
+      });
+
+      // Navbar scroll effect
+      window.addEventListener("scroll", function () {
+        const navbar = document.querySelector(".navbar");
+        if (window.scrollY > 50) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+
+      // Fade in animation on scroll
+      function handleScrollAnimations() {
+        const elements = document.querySelectorAll(".fade-in");
+        elements.forEach((element) => {
+          const elementTop = element.getBoundingClientRect().top;
+          const elementVisible = 150;
+
+          if (elementTop < window.innerHeight - elementVisible) {
+            element.classList.add("visible");
+          }
+        });
+      }
+
+      window.addEventListener("scroll", handleScrollAnimations);
+      window.addEventListener("load", handleScrollAnimations);
+
+      // Checkbox toggle function
+      function toggleCheck(checkbox) {
+        checkbox.classList.toggle("checked");
+        if (checkbox.classList.contains("checked")) {
+          checkbox.innerHTML = "✓";
+          checkbox.style.color = "white";
+        } else {
+          checkbox.innerHTML = "";
+        }
+      }
+
+      // Add some interactive hover effects
+      document.querySelectorAll(".card").forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.style.transform = "translateY(-10px) scale(1.02)";
+        });
+
+        card.addEventListener("mouseleave", function () {
+          this.style.transform = "translateY(0) scale(1)";
+        });
+      });
+
+      // Mobile menu toggle (basic implementation)
+      const mobileMenu = document.querySelector(".mobile-menu");
+      const navLinks = document.querySelector(".nav-links");
+
+      mobileMenu.addEventListener("click", function () {
+        navLinks.style.display =
+          navLinks.style.display === "flex" ? "none" : "flex";
+      });
+    </script>
+  </body>
+</html>
