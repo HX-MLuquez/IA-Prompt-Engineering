@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /private/
 Allow: /
 
-Sitemap: https://ia-prompt-engineering.vercel.app/sitemap.xml
+Sitemap: https://www.example.com/sitemap.xml
