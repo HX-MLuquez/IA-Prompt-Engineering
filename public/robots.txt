@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /private/
+Allow: /
+
+Sitemap: https://ia-prompt-engineering.vercel.app/sitemap.xml
