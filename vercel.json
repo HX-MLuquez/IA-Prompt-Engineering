@@ -1,0 +1,20 @@
+{
+  "routes": [
+    {
+      "src": "/favicon.ico",
+      "dest": "/public/iafav.ico"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/public/sitemap.xml"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/public/robots.txt"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
